@@ -2,6 +2,16 @@
 <!-- Some of theses SQL Injection are from ha.ckers.org web security lab -->
 <sql>
 	<attack>
+		<name>Simple SQL Injection</name>
+		<code>&apos;</code>
+		<label>Simple SQL Injection Attacks</label>
+	</attack>
+	<attack>
+		<name>Simple SQL Injection</name>
+		<code>&apos; OR 1 = 1 -- </code>
+		<label>Simple SQL Injection Attacks</label>
+	</attack>
+	<attack>
 		<name>Basic SQL Injection</name>
 		<code>1&apos;GRABBER_SQL_INJECTION</code>
 		<label>Basic SQL Injection Attacks</label>

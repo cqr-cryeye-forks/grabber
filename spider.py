@@ -6,8 +6,10 @@
 import urllib
 import time
 import re,sys,os,string
+import ssl
 from BeautifulSoup import BeautifulSoup,SoupStrainer
 from urllib2 import URLError, HTTPError
+from urlparse import urljoin
 COOKIEFILE = 'cookies.lwp'          # the path and filename that you want to use to save your cookies in
 import os.path
 cj = None
@@ -21,7 +23,8 @@ cj = cookielib.LWPCookieJar()       # This is a subclass of FileCookieJar that h
 Request = urllib2.Request
 txdata = None
 refererUrl = "http://google.com/?q=you!"
-txheaders = {'User-agent' : 'Grabber/0.1 (X11; U; Linux i686; en-US; rv:1.7)', 'Referer' : refererUrl}
+cookie = "cse591=jGqnZlVLzVN4CYEewGKSZVaqNDD1B0ZTEpeqSpZl; session=eyJfY3NyZl90b2tlbiI6eyIgYiI6IldVdFVUSGt5VW01WWIyOUZha3AxVUhaa2JFVjZRVDA5In19.B-tJpg.vc6OGoScMb9F4VfRME9gjtl4ovE"
+txheaders = {'User-agent' : 'Grabber/0.1 (X11; U; Linux i686; en-US; rv:1.7)', 'Referer' : refererUrl, 'Cookie': cookie}
 
 allowed=['php','html','htm','xml','xhtml','xht','xhtm',
          'asp','aspx','msp','mspx','php3','php4','php5','txt','shtm',
@@ -113,11 +116,14 @@ def getContentDirectURL_GET(url, string):
 			url = url + "?" + (string)
 		opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
 		urllib2.install_opener(opener)
+		context = ssl._create_unverified_context()
 		req = Request(url, None, txheaders) # create a request object
-		ret = urlopen(req)                     # and open it to return a handle on the url
+		ret = urlopen(req, context=context)                     # and open it to return a handle on the url
 	except HTTPError, e:
+		print e
 		return
 	except URLError, e:
+		print e
 		return
 	except IOError:
 		return
@@ -181,6 +187,9 @@ def giveGoodURL(href, urlLocal):
 			if '.'+e in urlLocal:
 				return htmldecode(urlLocal + href)
 		return htmldecode(urlLocal + '/' + href)
+	if href[0] == '/':
+		 temp_url = urljoin(urlLocal, href)
+		 return htmldecode(temp_url)
 	else:
 		# simple name
 		if allowedExtensions(urlLocal) or '?' in urlLocal:
@@ -395,6 +404,7 @@ def dict_add(d1,d2):
 	if len(d2):
 		for s in d2.keys():
 			d[s] = d2[s]
+
 	return d
 
 def dict_add_list(d1,l1):
@@ -442,32 +452,36 @@ def parseHtmlParams(currentURL, htmlContent):
 	forms = SoupStrainer('form')
 	input = SoupStrainer('input')
 	listForm = [tag for tag in BeautifulSoup(htmlContent, parseOnlyThese=forms)]
+	
 	for f in listForm:
 		method = 'GET'
-		if 'method' in f or 'METHOD' in f:
-			method = f['method'].upper()
+		if f.get('method'):
+			method = f.get('method').upper()
 		action = currentURL
-		if 'action' in f or 'ACTION' in f:
-			action = f['action']
+		if f.get('action'):
+			action = f.get('action')
 		keyUrl = giveGoodURL(action,currentURL)
+
 		listInput = [tag for tag in BeautifulSoup(str(f), parseOnlyThese=input)]
+		print listInput
 		for i in listInput:
 			if not keyUrl in database:
 				database[keyUrl] = {}
 				database[keyUrl]['GET']  = {}
 				database[keyUrl]['POST'] = {}
 			try:
-				value = i['value']
+				value = i.get('value')
 			except KeyError:
 				value = '42'
 			try:
-				name = i['name']
+				name = i.get('name')
 			except KeyError:
 				name = 'foo'
 				value= 'bar'
 				continue
 			lGP = database[keyUrl][method]
-			lGP = dict_add(lGP,{name : value})
+			d2  = { str(name) : str(value) }
+			lGP = dict_add(lGP, d2)
 			database[keyUrl][method] = lGP
 	return True
 

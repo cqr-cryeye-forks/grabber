@@ -10,7 +10,7 @@ from grabber import single_urlencode
 
 
 def detect_sql(output, url_get = "http://localhost/?param=false"):
-	listWords = ["SQL syntax","valid MySQL","ODBC Microsoft Access Driver","java.sql.SQLException","XPathException","valid ldap","javax.naming.NameNotFoundException"]
+	listWords = ["SQL syntax","valid MySQL","ODBC Microsoft Access Driver","java.sql.SQLException","XPathException","valid ldap","javax.naming.NameNotFoundException", "SQLite3"]
 	for wrd in listWords:
 		if output.count(wrd) > 0:
 			return True
@@ -53,6 +53,8 @@ def permutations(L):
 
 
 def process(url, database, attack_list):
+	print "Starting SQL Injection Attacks"
+	print database
 	plop = open('results/sql_GrabberAttacks.xml','w')
 	plop.write("<sqlAttacks>\n")
 

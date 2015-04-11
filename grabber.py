@@ -10,7 +10,7 @@ from urllib2 import URLError, HTTPError
 import urllib
 import time
 import re,sys,os
-
+import ssl
 # Personal libraries
 from spider import database, database_css, database_js
 from spider import spider, cj, allowedExtensions
@@ -19,7 +19,8 @@ COOKIEFILE = 'cookies.lwp'          # the path and filename that you want to use
 import os.path
 txdata = None
 refererUrl = "http://google.com/?q=grabber"
-txheaders = {'User-agent' : 'Grabber/0.1 (X11; U; Linux i686; en-US; rv:1.7)', 'Referer' : refererUrl}
+cookie = "cse591=jGqnZlVLzVN4CYEewGKSZVaqNDD1B0ZTEpeqSpZl; session=eyJfY3NyZl90b2tlbiI6eyIgYiI6IldVdFVUSGt5VW01WWIyOUZha3AxVUhaa2JFVjZRVDA5In19.B-tJpg.vc6OGoScMb9F4VfRME9gjtl4ovE"
+txheaders = {'User-agent' : 'Grabber/0.1 (X11; U; Linux i686; en-US; rv:1.7)', 'Referer' : refererUrl, 'Cookie': cookie}
 
 import cookielib
 import urllib2
@@ -178,9 +179,9 @@ def getContent_GET(url,param,injection):
 		opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
 		urllib2.install_opener(opener)
 		log <= ( newUrl)
+		context = ssl._create_unverified_context()
 		req = Request(newUrl, None, txheaders) # create a request object
-		ret = urlopen(req)                     # and open it to return a handle on the url
-		ret = urlopen(req)                     # and open it to return a handle on the url
+		ret = urlopen(req ,context=context)                     # and open it to return a handle on the url
 	except HTTPError, e:
 		log <= ( 'The server couldn\'t fulfill the request.')
 		log <= ( 'Error code: %s' % e.code)
@@ -209,8 +210,9 @@ def getContentDirectURL_GET(url, string):
 		opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
 		urllib2.install_opener(opener)
 		log <= ( url)
+		context = ssl._create_unverified_context()
 		req = Request(url, None, txheaders) # create a request object
-		ret = urlopen(req)                     # and open it to return a handle on the url
+		ret = urlopen(req, context=context)                     # and open it to return a handle on the url
 	except HTTPError, e:
 		log <= ( 'The server couldn\'t fulfill the request.')
 		log <= ( 'Error code: %s' % e.code)
@@ -237,14 +239,16 @@ def getContent_POST(url,param,injection):
 		urllib2.install_opener(opener)
 		log <= ( url)
 		log <= ( txdata)
+		context = ssl._create_unverified_context()
 		req = Request(url, txdata, txheaders)  # create a request object
-		ret = urlopen(req)                     # and open it to return a handle on the url
-		ret = urlopen(req)                     # and open it to return a handle on the url
+		ret = urlopen(req, context=context)                     # and open it to return a handle on the url
 	except HTTPError, e:
+		print e
 		log <= ( 'The server couldn\'t fulfill the request.')
 		log <= ( 'Error code: %s' % e.code)
 		return None
 	except URLError, e:
+		print e
 		log <= ( 'We failed to reach a server.')
 		log <= ( 'Reason: %s' % e.reason)
 		return None
@@ -267,8 +271,8 @@ def getContentDirectURL_POST(url,allParams):
 		log <= ( url)
 		log <= ( txdata)
 		req = Request(url, txdata, txheaders)  # create a request object
-		ret = urlopen(req)                     # and open it to return a handle on the url
-		ret = urlopen(req)                     # and open it to return a handle on the url
+		context = ssl._create_unverified_context()
+		ret = urlopen(req, context=context)                     # and open it to return a handle on the url
 	except HTTPError, e:
 		log <= ( 'The server couldn\'t fulfill the request.')
 		log <= ( 'Error code: %s' % e.code)

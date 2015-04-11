@@ -105,7 +105,7 @@ def process(urlGlobal, database, attack_list):
 							output = handle.read()
 							if detect_xss(str(instance), output):
 								# generate the info...
-								plop.write(generateOutputLong(u,url,"POST",typeOfInjection, allParams))
+								plop.write(generateOutputLong(u,gParam,"POST",typeOfInjection, allParams))
 	plop.write("\n</xssAttacks>\n")	
 	plop.close()
 	return ""
