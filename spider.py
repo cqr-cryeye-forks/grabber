@@ -10,14 +10,16 @@ import ssl
 from BeautifulSoup import BeautifulSoup,SoupStrainer
 from urllib2 import URLError, HTTPError
 from urlparse import urljoin
-COOKIEFILE = 'cookies.lwp'          # the path and filename that you want to use to save your cookies in
 import os.path
+
+COOKIEFILE = 'cookies.lwp'          # the path and filename that you want to use to save your cookies in
 cj = None
 ClientCookie = None
 cookielib = None
 
 import cookielib
 import urllib2
+
 urlopen = urllib2.urlopen
 cj = cookielib.LWPCookieJar()       # This is a subclass of FileCookieJar that has useful load and save methods
 Request = urllib2.Request
@@ -150,7 +152,7 @@ def scan(currentURL):
 	except AttributeError:
 		print ("Grabber cannot retrieve the given url: %s" % currentURL)
 		return
-	parseHtmlLinks (currentURL,htmlContent)
+	parseHtmlLinks(currentURL,htmlContent)
 	parseHtmlParams(currentURL,htmlContent)
 
 def allowedExtensions(plop):
@@ -234,11 +236,12 @@ def parseHtmlLinks(currentURL,htmlContent):
 	links = SoupStrainer('a')
 	# listAnchors = [tag['href'] for tag in BeautifulSoup(htmlContent, parseOnlyThese=links)]
 	listAnchors = []
+
 	for tag in BeautifulSoup(htmlContent, parseOnlyThese=links):
 		try:
 			string = str(tag).lower()
 			if string.count("href") > 0:
-				listAnchors.append(tag['href'])
+				listAnchors.append(tag.get('href'))
 		except TypeError:
 			continue
 		except KeyError:
@@ -247,7 +250,7 @@ def parseHtmlLinks(currentURL,htmlContent):
 	for a in listAnchors:
 		goodA = giveGoodURL(a,currentURL)
 		goodA = removeSESSID(goodA)
-		if (root in goodA) and (goodA not in database_url):
+		if (goodA not in database_url):
 			database_url.append(goodA)
 
 	# parse the CSS and the JavaScript
@@ -258,7 +261,7 @@ def parseHtmlLinks(currentURL,htmlContent):
 		try:
 			string = str(tag).lower()
 			if string.count("src") > 0 and string.count(".src") < 1:
-				listScripts.append(tag['src'])
+				listScripts.append(tag.get('src'))
 		except TypeError:
 			continue
 		except KeyError:
@@ -280,7 +283,7 @@ def parseHtmlLinks(currentURL,htmlContent):
 		try:
 			string = str(tag).lower()
 			if string.count("href") > 0:
-				listLinks.append(tag['href'])
+				listLinks.append(tag.get('href'))
 		except TypeError:
 			continue
 		except KeyError:
@@ -451,6 +454,8 @@ def parseHtmlParams(currentURL, htmlContent):
 	# then, parse the forms
 	forms = SoupStrainer('form')
 	input = SoupStrainer('input')
+	textarea = SoupStrainer('textarea')
+
 	listForm = [tag for tag in BeautifulSoup(htmlContent, parseOnlyThese=forms)]
 	
 	for f in listForm:
@@ -463,7 +468,6 @@ def parseHtmlParams(currentURL, htmlContent):
 		keyUrl = giveGoodURL(action,currentURL)
 
 		listInput = [tag for tag in BeautifulSoup(str(f), parseOnlyThese=input)]
-		print listInput
 		for i in listInput:
 			if not keyUrl in database:
 				database[keyUrl] = {}
@@ -480,9 +484,31 @@ def parseHtmlParams(currentURL, htmlContent):
 				value= 'bar'
 				continue
 			lGP = database[keyUrl][method]
-			d2  = { str(name) : str(value) }
+			d2  = { str(name) : value }
 			lGP = dict_add(lGP, d2)
 			database[keyUrl][method] = lGP
+
+		textarea = [tag for tag in BeautifulSoup(str(f), parseOnlyThese=textarea)]
+		for t in textarea:
+			if not keyUrl in database:
+				database[keyUrl] = {}
+				database[keyUrl]['GET'] = {}
+				database[keyUrl]['POST'] = {}
+			try:
+				value = t.get('value')
+			except KeyError:
+				value = "test"
+			try:
+				name = t.get('name')
+			except KeyError:
+				name = "comment"
+				continue
+
+			lGP = database[keyUrl][method]
+			d2  = { str(name) : value }
+			lGP = dict_add(lGP, d2)
+			database[keyUrl][method] = lGP
+
 	return True
 
 

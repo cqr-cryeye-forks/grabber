@@ -2,9 +2,12 @@
 <!-- Grabber configuration file -->
 <grabber version="0.1">
 	<site>
-		<url>http://192.168.1.2/bank</url>
+		<url>https://129.219.253.30:80/~level03/cgi-bin/login.php</url>
 		<spider>0</spider> <!-- Depth of the spider -->
+
 		<scan>
+            <xss/>
+            <sql/>
 			<!--
 				If the action is in the list... it will be done...
 				tags:
