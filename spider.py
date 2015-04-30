@@ -25,7 +25,7 @@ cj = cookielib.LWPCookieJar()       # This is a subclass of FileCookieJar that h
 Request = urllib2.Request
 txdata = None
 refererUrl = "http://google.com/?q=you!"
-cookie = "cse591=jGqnZlVLzVN4CYEewGKSZVaqNDD1B0ZTEpeqSpZl; session=eyJfY3NyZl90b2tlbiI6eyIgYiI6IldVdFVUSGt5VW01WWIyOUZha3AxVUhaa2JFVjZRVDA5In19.B-tJpg.vc6OGoScMb9F4VfRME9gjtl4ovE"
+cookie = "cse591=krGt9tuOLLY1KjxsAsfw; PHPSESSID=erc86bmvi86ek1537h7fqo8c30; wackopicko=DNTzkvhdVrpJ5tUUH5mS; auth=avd:avd"
 txheaders = {'User-agent' : 'Grabber/0.1 (X11; U; Linux i686; en-US; rv:1.7)', 'Referer' : refererUrl, 'Cookie': cookie}
 
 allowed=['php','html','htm','xml','xhtml','xht','xhtm',
@@ -152,6 +152,7 @@ def scan(currentURL):
 	except AttributeError:
 		print ("Grabber cannot retrieve the given url: %s" % currentURL)
 		return
+ 	print currentURL
 	parseHtmlLinks(currentURL,htmlContent)
 	parseHtmlParams(currentURL,htmlContent)
 
@@ -526,6 +527,7 @@ def runSpiderScan(entryUrl, depth = 0):
 
 
 def spider(entryUrl, depth = 0):
+	print entryUrl
 	global root,outSpiderFile
 	"""
 		Retrieve every links

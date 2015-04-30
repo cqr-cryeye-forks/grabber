@@ -7,10 +7,10 @@ import sys
 from grabber import getContent_POST, getContent_GET
 from grabber import getContentDirectURL_GET, getContentDirectURL_POST
 from grabber import single_urlencode
-
+from grabber import appendToReport
 
 def detect_sql(output, url_get = "http://localhost/?param=false"):
-	listWords = ["SQL syntax","valid MySQL","ODBC Microsoft Access Driver","java.sql.SQLException","XPathException","valid ldap","javax.naming.NameNotFoundException", "SQLite3"]
+	listWords = ["query","Query", "Select", "SELECT", "SQL syntax","valid MySQL","ODBC Microsoft Access Driver","java.sql.SQLException","XPathException","valid ldap","javax.naming.NameNotFoundException", "SQLite3"]
 	for wrd in listWords:
 		if output.count(wrd) > 0:
 			return True
@@ -41,6 +41,11 @@ def generateOutputLong(url, urlString ,method,type, allParams = {}):
 	astr += "\n</sql>\n"
 	return astr
 
+def generateHTMLOutput(url, gParam, instance, method, typeofInjection):
+	message = "<p>"+ method +" "+ url +" <br/>"
+	message += ""+ typeofInjection +  " <br/>"
+	# message += "Parameters"+ gParam +"<br/><br/>";
+	return message
 
 def permutations(L):
 	if len(L) == 1:
@@ -53,7 +58,7 @@ def permutations(L):
 
 
 def process(url, database, attack_list):
-	print "Starting SQL Injection Attacks"
+	appendToReport(url, "Starting SQL Injection Attacks")
 	print database
 	plop = open('results/sql_GrabberAttacks.xml','w')
 	plop.write("<sqlAttacks>\n")
@@ -71,6 +76,7 @@ def process(url, database, attack_list):
 							if detect_sql(output):
 								# generate the info...
 								plop.write(generateOutput(u,gParam,instance,"GET",typeOfInjection))
+								appendToReport(u, generateHTMLOutput(u, gParam, instance, "GET", typeOfInjection))
 			# see the permutations
 			if len(database[u]['GET'].keys()) > 1:
 				for typeOfInjection in attack_list:
@@ -84,6 +90,7 @@ def process(url, database, attack_list):
 							if detect_sql(output):
 								# generate the info...
 								plop.write(generateOutputLong(u,url,"GET",typeOfInjection))
+								appendToReport(u, generateHTMLOutput(u, url, "GET", typeOfInjection))
 		if len(database[u]['POST']):
 			print "Method = POST ", u
 			for gParam in database[u]['POST']:
@@ -96,6 +103,7 @@ def process(url, database, attack_list):
 							if detect_sql(output):
 								# generate the info...
 								plop.write(generateOutput(u,gParam,instance,"POST",typeOfInjection))
+								appendToReport(u, generateHTMLOutput(u, gParam, instance, "POST", typeOfInjection))
 			# see the permutations
 			if len(database[u]['POST'].keys()) > 1:
 				for typeOfInjection in attack_list:
@@ -109,6 +117,7 @@ def process(url, database, attack_list):
 							if detect_sql(output):
 								# generate the info...
 								plop.write(generateOutputLong(u,url,"POST",typeOfInjection, allParams))
+								appendToReport(u, generateHTMLOutput(u, allParams, url, "POST", typeOfInjection))
 	plop.write("\n</sqlAttacks>\n")
 	plop.close()
 	return ""

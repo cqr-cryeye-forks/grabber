@@ -11,6 +11,7 @@ import urllib
 import time
 import re,sys,os
 import ssl
+import webbrowser
 # Personal libraries
 from spider import database, database_css, database_js
 from spider import spider, cj, allowedExtensions
@@ -19,8 +20,10 @@ COOKIEFILE = 'cookies.lwp'          # the path and filename that you want to use
 import os.path
 txdata = None
 refererUrl = "http://google.com/?q=grabber"
-cookie = "cse591=jGqnZlVLzVN4CYEewGKSZVaqNDD1B0ZTEpeqSpZl; session=eyJfY3NyZl90b2tlbiI6eyIgYiI6IldVdFVUSGt5VW01WWIyOUZha3AxVUhaa2JFVjZRVDA5In19.B-tJpg.vc6OGoScMb9F4VfRME9gjtl4ovE"
+cookie = "cse591=krGt9tuOLLY1KjxsAsfw; PHPSESSID=erc86bmvi86ek1537h7fqo8c30; wackopicko=DNTzkvhdVrpJ5tUUH5mS; auth=avd:avd"
+#txheaders = {'User-agent' : 'Grabber/0.1 (X11; U; Linux i686; en-US; rv:1.7)', 'Referer' : refererUrl, 'Cookie': cookie}
 txheaders = {'User-agent' : 'Grabber/0.1 (X11; U; Linux i686; en-US; rv:1.7)', 'Referer' : refererUrl, 'Cookie': cookie}
+output = "<p></p>"
 
 import cookielib
 import urllib2
@@ -435,6 +438,34 @@ def createStructure():
 	except OSError,e :
 		a=0
 
+def generateReport(url, isFinal):
+	try:
+		f = open("results/report.html", 'w')
+		meta = '<meta http-equiv="refresh" content="2">'
+		if isFinal == True:
+			meta = ""
+
+		message = """<html>
+		<head>"""+meta+"""</head>
+		<body>
+		<h1>Grabber Report</h1>
+		<hr/>
+		<h4>URL: """+ url +"""</h4>
+		"""+ output +"""</body>
+		</html>"""
+
+		f.write(message)
+		f.close()
+
+	except IOError:
+		print "Failed to create report file"
+		sys.exit(1)
+
+def appendToReport(url, message):
+	global output
+	output += message
+	generateReport(url, False)
+
 if __name__ == '__main__':
 	option_url = ""
 	option_sql = False
@@ -446,7 +477,7 @@ if __name__ == '__main__':
 	option_js = False
 	option_crystal = False
 	option_session = False
-
+	
 	if len(sys.argv) > 1:
 		parser = OptionParser()
 		parser.add_option("-u", "--url", dest="archives_url", help="Adress to investigate")
@@ -501,9 +532,13 @@ if __name__ == '__main__':
 	if option_url:
 		archives_url = option_url
 	root = archives_url
-
 	createStructure()
 	depth = 1
+
+	generateReport(archives_url, False);
+	filename = "file:///Applications/XAMPP/xamppfiles/htdocs/grabber/results/report.html"
+	webbrowser.open_new_tab(filename)
+
 	try:
 		depth = int(option_spider.strip().split()[0])
 	except (ValueError, IndexError,AttributeError):
@@ -540,12 +575,6 @@ if __name__ == '__main__':
 			investigate(archives_url, "session")
 	except KeyboardInterrupt:
 		print "Plouf!"
-
-
-
-
-
-
 
 
 
