@@ -1,9 +1,0 @@
-<spider root='http://localhost/assignment2/user/register'>
-	<url type='anchor'>http://localhost/assignment2/user/register</url>
-	<url type='anchor'>http://localhost/assignment2/user/register</url>
-	<url type='anchor'>http://localhost/assignment2/</url>
-	<url type='anchor'>http://localhost/assignment2/message/list</url>
-	<url type='anchor'>http://localhost/assignment2/message/add</url>
-	<url type='anchor'>http://localhost/assignment2/User/register</url>
-	<url type='anchor'>http://localhost/assignment2/User/login</url>
-</spider>
