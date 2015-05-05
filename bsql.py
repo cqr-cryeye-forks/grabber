@@ -7,6 +7,7 @@ import sys
 from grabber import getContent_POST, getContent_GET
 from grabber import getContentDirectURL_GET, getContentDirectURL_POST
 from grabber import single_urlencode
+from report import appendToReport
 
 # order of the Blind SQL operations
 orderBSQL = {'AND' : 'TEST', 'TEST' : ['OR','COMMENT','ESCAPE','EVASION']}
@@ -61,34 +62,36 @@ def permutations(L):
 				yield b[:i] + a + b[i:]
 
 
-def process(url, database, attack_list):
+def process(url, database, attack_list, txheaders):
+	appendToReport(url, "<div class='panel panel-info'><div class='panel-heading'><h3 class='panel-title'> <a data-toggle='collapse' data-target='#collapseBSql' href='#collapseBSql'>Blind SQL Injection Attacks </a></h3></div>")
 	plop = open('results/bsql_GrabberAttacks.xml','w')
 	plop.write("<bsqlAttacks>\n")
-
+	appendToReport(url, '<div id="collapseBSql" class="panel-collapse collapse in"><div class="panel-body">');
 	for u in database.keys():
+		appendToReport(url, "<h4><div class='label label-default'><a target='_balnk' href='"+ u +"'>"+ u +"</a></div></h4>")
 		if len(database[u]['GET']):
 			print "Method = GET ", u
 			# single parameter testing
 			for gParam in database[u]['GET']:
 				defaultValue = database[u]['GET'][gParam]
-				defaultReturn = getContent_GET(u,gParam,defaultValue)
+				defaultReturn = getContent_GET(u,gParam,defaultValue, txheaders)
 				if defaultReturn == None:
 					continue
 				# get the AND statments
 				for andSQL in attack_list['AND']:
-					tmpError = getContent_GET(u,gParam,andSQL)
+					tmpError = getContent_GET(u,gParam,andSQL, txheaders)
 					if tmpError == None:
 						continue
 					if equal(defaultReturn.read(), tmpError.read()):
 						# dive here :)
-						basicError  = getContent_GET(u,gParam,'')
-						overflowErS = getContent_GET(u,gParam,overflowStr)
+						basicError  = getContent_GET(u,gParam,'', txheaders)
+						overflowErS = getContent_GET(u,gParam,overflowStr, txheaders)
 						if basicError == None or overflowErS == None:
 							continue
 						if equal(basicError.read(), overflowErS.read()):
 							for key in orderBSQL[orderBSQL['AND']]:
 								for instance in attack_list[key]:
-									tmpError  = getContent_GET(u,gParam,instance)
+									tmpError  = getContent_GET(u,gParam,instance, txheaders)
 									if tmpError == None:
 										continue
 									if equal(basicError.read(), tmpError.read()):
@@ -119,24 +122,24 @@ def process(url, database, attack_list):
 			# single parameter testing
 			for gParam in database[u]['POST']:
 				defaultValue = database[u]['POST'][gParam]
-				defaultReturn = getContent_POST(u,gParam,defaultValue)
+				defaultReturn = getContent_POST(u,gParam,defaultValue, txheaders)
 				if defaultReturn == None:
 					continue
 				# get the AND statments
 				for andSQL in attack_list['AND']:
-					tmpError = getContent_POST(u,gParam,andSQL)
+					tmpError = getContent_POST(u,gParam,andSQL, txheaders)
 					if tmpError == None:
 						continue
 					if equal(defaultReturn.read(), tmpError.read()):
 						# dive here :)
-						basicError  = getContent_POST(u,gParam,'')
-						overflowErS = getContent_POST(u,gParam,overflowStr)
+						basicError  = getContent_POST(u,gParam,'', txheaders)
+						overflowErS = getContent_POST(u,gParam,overflowStr, txheaders)
 						if basicError == None or overflowErS == None:
 							continue
 						if equal(basicError.read(), overflowErS.read()):
 							for key in orderBSQL[orderBSQL['AND']]:
 								for instance in attack_list[key]:
-									tmpError  = getContent_POST(u,gParam,instance)
+									tmpError  = getContent_POST(u,gParam,instance, txheaders)
 									if tmpError == None:
 										continue
 									if equal(basicError.read(), tmpError.read()):
@@ -146,5 +149,6 @@ def process(url, database, attack_list):
 							# report a overflow possible error
 							plop.write(generateOutput(u,gParam,"99999...99999","POST","Overflow"))
 	plop.write("\n</bsqlAttacks>\n")
+	appendToReport(url, "</div></div>");
 	plop.close()
 	return ""

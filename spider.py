@@ -11,6 +11,7 @@ from BeautifulSoup import BeautifulSoup,SoupStrainer
 from urllib2 import URLError, HTTPError
 from urlparse import urljoin
 import os.path
+from report import appendToReport
 
 COOKIEFILE = 'cookies.lwp'          # the path and filename that you want to use to save your cookies in
 cj = None
@@ -25,8 +26,7 @@ cj = cookielib.LWPCookieJar()       # This is a subclass of FileCookieJar that h
 Request = urllib2.Request
 txdata = None
 refererUrl = "http://google.com/?q=you!"
-cookie = "cse591=krGt9tuOLLY1KjxsAsfw; PHPSESSID=erc86bmvi86ek1537h7fqo8c30; wackopicko=DNTzkvhdVrpJ5tUUH5mS; auth=avd:avd"
-txheaders = {'User-agent' : 'Grabber/0.1 (X11; U; Linux i686; en-US; rv:1.7)', 'Referer' : refererUrl, 'Cookie': cookie}
+
 
 allowed=['php','html','htm','xml','xhtml','xht','xhtm',
          'asp','aspx','msp','mspx','php3','php4','php5','txt','shtm',
@@ -134,6 +134,7 @@ def getContentDirectURL_GET(url, string):
 
 
 def scan(currentURL):
+	appendToReport(currentURL, "Generating Index..")
 	"""
 		The Scanner is the first part of Grabber.
 		It retrieves every information of the HTML page
@@ -146,6 +147,7 @@ def scan(currentURL):
 		log <= ("IOError @ %s" % currentURL)
 	try:
 		htmlContent= archives_hDl.read()
+		#print archives_hDl.info()
 	except IOError, e:
 		print "Cannot open the file,",(e.strerror)
 		return
@@ -172,6 +174,7 @@ def makeRoot(urlLocal):
 
 
 def giveGoodURL(href, urlLocal):
+	
 	"""
 		It should return a good url...
 		href = argument retrieven from the href...
@@ -200,7 +203,6 @@ def giveGoodURL(href, urlLocal):
 		else:
 			return htmldecode(urlLocal + '/' + href)
 	return htmldecode(href)
-
 
 def dl(fileAdress, destFile):
 	"""
@@ -429,7 +431,7 @@ def parseHtmlParams(currentURL, htmlContent):
 	for url in database_url:
 		k = url.find('?')
 		if k > 0:
-			keyUrl = url[0:k-1]
+			keyUrl = url[0:k]
 			query = url[k+1:]
 			if not keyUrl in database:
 				database[keyUrl] = {}
@@ -526,9 +528,11 @@ def runSpiderScan(entryUrl, depth = 0):
 	return True
 
 
-def spider(entryUrl, depth = 0):
+def spider(entryUrl, headers, depth = 0):
 	print entryUrl
 	global root,outSpiderFile
+	global txheaders
+	txheaders = headers
 	"""
 		Retrieve every links
 	"""

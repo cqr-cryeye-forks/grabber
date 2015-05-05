@@ -7,7 +7,8 @@ import sys
 from grabber import getContent_POST, getContent_GET
 from grabber import getContentDirectURL_GET, getContentDirectURL_POST
 
-from grabber import single_urlencode, partially_in, unescape
+from grabber import single_urlencode, partially_in, unescape, escape
+from report import appendToReport
 
 def detect_xss(instance, output):
 	if unescape(instance) in output:
@@ -39,6 +40,12 @@ def generateOutputLong(url, urlString ,method,type, allParams = {}):
 	astr += "\n</xss>\n"
 	return astr
 
+def generateHTMLOutput(url, gParam, instance, method, typeofInjection):
+	message = "<p class='well'>"+ method +" "+ url +" <br/>"
+	message += ""+ typeofInjection +  " <br/>"
+	message += "Parameter: "+ gParam + "  Value: "+ escape(instance) +  " <br/></p>"
+	# message += "Parameters"+ gParam +"<br/><br/>";
+	return message
 
 def permutations(L):
 	if len(L) == 1:
@@ -49,18 +56,21 @@ def permutations(L):
 			for i in range(len(p)+1):
 				yield b[:i] + a + b[i:]
 
-def process(urlGlobal, database, attack_list):
+def process(urlGlobal, database, attack_list ,txheaders):
+	appendToReport(urlGlobal, "<div class='panel panel-info'><div class='panel-heading'><h3 class='panel-title'> <a data-toggle='collapse' data-target='#collapseXss' href='#collapseXss'>XSS Attacks </a></h3></div>")
 	plop = open('results/xss_GrabberAttacks.xml','w')
 	plop.write("<xssAttacks>\n")
+	appendToReport(urlGlobal, '<div id="collapseXss" class="panel-collapse collapse in"><div class="panel-body">')
 
 	for u in database.keys():
+		appendToReport(urlGlobal, "<h4><div class='label label-default'><a target='_balnk' href='"+ u +"'>"+ u +"</a></div></h4>")
 		if len(database[u]['GET']):
 			print "Method = GET ", u
 			for gParam in database[u]['GET']:
 				for typeOfInjection in attack_list:
 					for instance in attack_list[typeOfInjection]:
 						if instance != "See Below":
-							handle = getContent_GET(u,gParam,instance)
+							handle = getContent_GET(u,gParam,instance, txheaders)
 							if handle != None:
 								output = handle.read()
 								header = handle.info()
@@ -74,7 +84,7 @@ def process(urlGlobal, database, attack_list):
 						url = ""
 						for gParam in database[u]['GET']:
 							url += ("%s=%s&" % (gParam, single_urlencode(str(instance))))
-						handle = getContentDirectURL_GET(u,url)
+						handle = getContentDirectURL_GET(u,url, txheaders)
 						if handle != None:
 							output = handle.read()
 							if detect_xss(str(instance),output):
@@ -85,14 +95,20 @@ def process(urlGlobal, database, attack_list):
 			for gParam in database[u]['POST']:
 				for typeOfInjection in attack_list:
 					for instance in attack_list[typeOfInjection]:
+						allParams = {}
+						for param in database[u]['POST']:
+							if param != gParam:
+								allParams[param] = 'abc'
+						allParams[gParam] = str(instance)
 						if instance != "See Below":
-							handle = getContent_POST(u,gParam,instance)
+							handle = getContentDirectURL_POST(u,allParams, txheaders)
 							if handle != None:
 								output = handle.read()
 								header = handle.info()
 								if detect_xss(str(instance),output):
 									# generate the info...
 									plop.write(generateOutput(u,gParam,instance,"POST",typeOfInjection))
+									appendToReport(u, generateHTMLOutput(u, gParam, instance, "POST", typeOfInjection))
 			# see the permutations
 			if len(database[u]['POST'].keys()) > 1:
 				for typeOfInjection in attack_list:
@@ -100,12 +116,14 @@ def process(urlGlobal, database, attack_list):
 						allParams = {}
 						for gParam in database[u]['POST']:
 							allParams[gParam] = str(instance)
-						handle = getContentDirectURL_POST(u,allParams)
+						handle = getContentDirectURL_POST(u,allParams, txheaders)
 						if handle != None:
 							output = handle.read()
 							if detect_xss(str(instance), output):
 								# generate the info...
 								plop.write(generateOutputLong(u,gParam,"POST",typeOfInjection, allParams))
+								appendToReport(u, generateHTMLOutput(u, "ALL", instance, "POST", typeOfInjection))
 	plop.write("\n</xssAttacks>\n")	
 	plop.close()
+	appendToReport(urlGlobal, "</div></div>")
 	return ""

@@ -7,6 +7,7 @@ import sys
 from grabber import getContent_POST, getContent_GET
 from grabber import getContentDirectURL_GET, getContentDirectURL_POST
 from grabber import single_urlencode
+from report import appendToReport
 
 severity = ["None", "Low", "Medium", "High"]
 
@@ -54,17 +55,19 @@ def permutations(L):
 			for i in range(len(p)+1):
 				yield b[:i] + a + b[i:]
 
-def process(url, database, attack_list):
+def process(url, database, attack_list, txheaders):
+	appendToReport(url, "<div class='panel panel-info'><div class='panel-heading'><h3 class='panel-title'> <a data-toggle='collapse' data-target='#collapseInclude' href='#collapseInclude'>File Injection Attacks </a></h3></div>")
 	plop = open('results/files_GrabberAttacks.xml','w')
 	plop.write("<filesAttacks>\n")
-
+	appendToReport(url, '<div id="collapseInclude" class="panel-collapse collapse in"><div class="panel-body">');
 	for u in database.keys():
+		appendToReport(url, "<h4><div class='label label-default'><a target='_balnk' href='"+ u +"'>"+ u +"</a></div></h4>")
 		if len(database[u]['GET']):
 			print "Method = GET ", u
 			for gParam in database[u]['GET']:
 				for typeOfInjection in attack_list:
 					for instance in attack_list[typeOfInjection]:
-						handle = getContent_GET(u,gParam,instance)
+						handle = getContent_GET(u,gParam,instance, txheaders)
 						if handle != None:
 							output = handle.read()
 							header = handle.info()
@@ -79,7 +82,7 @@ def process(url, database, attack_list):
 						url = ""
 						for gParam in database[u]['GET']:
 							url += ("%s=%s&" % (gParam, single_urlencode(str(instance))))
-						handle = getContentDirectURL_GET(u,url)
+						handle = getContentDirectURL_GET(u,url, txheaders)
 						if handle != None:
 							output = handle.read()
 							k = detect_file(output)
@@ -91,7 +94,7 @@ def process(url, database, attack_list):
 			for gParam in database[u]['POST']:
 				for typeOfInjection in attack_list:
 					for instance in attack_list[typeOfInjection]:
-						handle = getContent_POST(u,gParam,instance)
+						handle = getContent_POST(u,gParam,instance, txheaders)
 						if handle != None:
 							output = handle.read()
 							header = handle.info()
@@ -106,7 +109,7 @@ def process(url, database, attack_list):
 						allParams = {}
 						for gParam in database[u]['POST']:
 							allParams[gParam] = str(instance)
-						handle = getContentDirectURL_POST(u,allParams)
+						handle = getContentDirectURL_POST(u,allParams, txheaders)
 						if handle != None:
 							output = handle.read()
 							k = detect_file(output)
@@ -114,5 +117,6 @@ def process(url, database, attack_list):
 								# generate the info...
 								plop.write(generateOutputLong(u,url,"POST",typeOfInjection,k,allParams))
 	plop.write("\n</filesAttacks>")
+	appendToReport(url, "</div></div>");
 	plop.close()
 	return ""

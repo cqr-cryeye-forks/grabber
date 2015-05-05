@@ -12,18 +12,19 @@ import time
 import re,sys,os
 import ssl
 import webbrowser
+
 # Personal libraries
 from spider import database, database_css, database_js
 from spider import spider, cj, allowedExtensions
+from report import generateReport, appendToReport, setOptions
 
 COOKIEFILE = 'cookies.lwp'          # the path and filename that you want to use to save your cookies in
 import os.path
 txdata = None
+txheaders = {}
 refererUrl = "http://google.com/?q=grabber"
-cookie = "cse591=krGt9tuOLLY1KjxsAsfw; PHPSESSID=erc86bmvi86ek1537h7fqo8c30; wackopicko=DNTzkvhdVrpJ5tUUH5mS; auth=avd:avd"
 #txheaders = {'User-agent' : 'Grabber/0.1 (X11; U; Linux i686; en-US; rv:1.7)', 'Referer' : refererUrl, 'Cookie': cookie}
-txheaders = {'User-agent' : 'Grabber/0.1 (X11; U; Linux i686; en-US; rv:1.7)', 'Referer' : refererUrl, 'Cookie': cookie}
-output = "<p></p>"
+
 
 import cookielib
 import urllib2
@@ -35,6 +36,10 @@ def normalize_whitespace(text):
 
 def clear_whitespace(text):
 	return text.replace(' ','')
+
+def definition_headers(cookie):
+    global txheaders
+    txheaders = {'User-agent' : 'Grabber/0.1 (X11; U; Linux i686; en-US; rv:1.7)', 'Referer' : refererUrl, 'Cookie': cookie}
 
 # Configuration variables
 confFile = False
@@ -143,6 +148,10 @@ class LogHandler:
 	def __del__(self):
 		self.stream.close()
 
+class ParamHandler:
+	def __init__(self, cookie):
+		self.cookie = cookie
+
 log = LogHandler('grabber.log')
 
 def unescape(s):
@@ -156,6 +165,16 @@ def unescape(s):
 	s = s.replace("&amp;", "&")
 	return s
 
+def escape(s):
+	"""
+		Escaping the HTML special characters
+	"""
+	s = s.replace("<", "&lt;")
+	s = s.replace(">", "&gt;")
+	s = s.replace("\"", "&quot;")
+	s = s.replace("'","&apos;")
+	s = s.replace("&", "&apos;")
+	return s
 
 def single_urlencode(text):
    """single URL-encode a given 'text'.  Do not return the 'variablename=' portion."""
@@ -165,7 +184,7 @@ def single_urlencode(text):
    blah = blah.replace('%5C0','%00')
    return blah
 
-def getContent_GET(url,param,injection):
+def getContent_GET(url,param,injection, txheaders):
 	global log
 	"""
 		Get the content of the url by GET method
@@ -199,7 +218,7 @@ def getContent_GET(url,param,injection):
 	return ret
 
 
-def getContentDirectURL_GET(url, string):
+def getContentDirectURL_GET(url, string, txheaders):
 	global log
 	"""
 		Get the content of the url by GET method
@@ -230,7 +249,7 @@ def getContentDirectURL_GET(url, string):
 	return ret
 
 
-def getContent_POST(url,param,injection):
+def getContent_POST(url,param,injection, txheaders):
 	global log
 	"""
 		Get the content of the url by POST method
@@ -261,7 +280,7 @@ def getContent_POST(url,param,injection):
 	return ret
 
 
-def getContentDirectURL_POST(url,allParams):
+def getContentDirectURL_POST(url, allParams, txheaders):
 	global log
 	"""
 		Get the content of the url by POST method
@@ -360,7 +379,7 @@ def	setDatabase(localDatabase):
 	database = localDatabase
 
 
-def investigate(url, what = "xss"):
+def investigate(url, txheaders, what = "xss"):
 	global attack_list
 	"""
 		Cross-Site Scripting Checking
@@ -401,7 +420,7 @@ def investigate(url, what = "xss"):
 		else:
 			raise AtrributeError("You need to give the session id storage key e.g. PHPSESSID, sid etc. ")
 
-	process(url, localDB, attack_list)
+	process(url, localDB, attack_list, txheaders)
 
 	# look at teh cookies returned
 	for index, cookie in enumerate(cj):
@@ -438,34 +457,6 @@ def createStructure():
 	except OSError,e :
 		a=0
 
-def generateReport(url, isFinal):
-	try:
-		f = open("results/report.html", 'w')
-		meta = '<meta http-equiv="refresh" content="2">'
-		if isFinal == True:
-			meta = ""
-
-		message = """<html>
-		<head>"""+meta+"""</head>
-		<body>
-		<h1>Grabber Report</h1>
-		<hr/>
-		<h4>URL: """+ url +"""</h4>
-		"""+ output +"""</body>
-		</html>"""
-
-		f.write(message)
-		f.close()
-
-	except IOError:
-		print "Failed to create report file"
-		sys.exit(1)
-
-def appendToReport(url, message):
-	global output
-	output += message
-	generateReport(url, False)
-
 if __name__ == '__main__':
 	option_url = ""
 	option_sql = False
@@ -477,7 +468,8 @@ if __name__ == '__main__':
 	option_js = False
 	option_crystal = False
 	option_session = False
-	
+	option_cookie = False
+
 	if len(sys.argv) > 1:
 		parser = OptionParser()
 		parser.add_option("-u", "--url", dest="archives_url", help="Adress to investigate")
@@ -490,6 +482,7 @@ if __name__ == '__main__':
 		parser.add_option("-j", "--javascript", dest="javascript", action="store_true",default=False, help="Test the javascript code ?")
 		parser.add_option("-c", "--crystal", dest="crystal", action="store_true",default=False, help="Simple crystal ball test.")
 		parser.add_option("-e", "--session", dest="session", action="store_true",default=False, help="Session evaluations")
+		parser.add_option("-o", "--cookie", dest="cookie", help="Pass HTTP cookies")
 
 		(options, args) = parser.parse_args()
 
@@ -503,6 +496,7 @@ if __name__ == '__main__':
 		option_js = options.javascript
 		option_crystal = options.crystal
 		option_session = options.session
+		option_cookie = options.cookie
 	else:
 		try:
 			f = open("grabber.conf.xml", 'r')
@@ -534,11 +528,15 @@ if __name__ == '__main__':
 	root = archives_url
 	createStructure()
 	depth = 1
+	setOptions(options)
 
 	generateReport(archives_url, False);
 	filename = "file:///Applications/XAMPP/xamppfiles/htdocs/grabber/results/report.html"
-	webbrowser.open_new_tab(filename)
+	webbrowser.open(filename, 0, False)
 
+	definition_headers(option_cookie)
+	if option_cookie != None:
+		appendToReport(archives_url, "<h4><div class='label label-default'>Cookie: "+ option_cookie +"</div></h4>")
 	try:
 		depth = int(option_spider.strip().split()[0])
 	except (ValueError, IndexError,AttributeError):
@@ -546,7 +544,7 @@ if __name__ == '__main__':
 
 	try:
 		try:
-			spider(archives_url, depth)
+			spider(archives_url, txheaders, depth)
 		except IOError,e :
 			print "Cannot open the url = %s" % archives_url
 			print e.strerror
@@ -558,24 +556,24 @@ if __name__ == '__main__':
 			print "Start investigation..."
 
 		if option_sql:
-			investigate(archives_url, "sql")
+			investigate(archives_url, txheaders, "sql")
 		if option_xss:
-			investigate(archives_url)
+			investigate(archives_url, txheaders)
 		if option_bsql:
-			investigate(archives_url,"bsql")
+			investigate(archives_url, txheaders, "bsql")
 		if option_backup:
-			investigate(archives_url, "backup")
+			investigate(archives_url, txheaders, "backup")
 		if option_include:
-			investigate(archives_url, "include")
+			investigate(archives_url, txheaders, "include")
 		if option_js:
-			investigate(archives_url, "javascript")
+			investigate(archives_url, txheaders, "javascript")
 		if option_crystal:
-			investigate(archives_url, "crystal")
+			investigate(archives_url, txheaders, "crystal")
 		if option_session:
-			investigate(archives_url, "session")
+			investigate(archives_url, txheaders, "session")
 	except KeyboardInterrupt:
 		print "Plouf!"
-
+	appendToReport("Completed", "", True)
 
 
 
