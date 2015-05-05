@@ -572,6 +572,7 @@ if __name__ == '__main__':
 		if option_session:
 			investigate(archives_url, txheaders, "session")
 	except KeyboardInterrupt:
+		appendToReport("Stopped", "", True)
 		print "Plouf!"
 	appendToReport("Completed", "", True)
 

@@ -41,9 +41,9 @@ def generateOutputLong(url, urlString ,method,type, allParams = {}):
 	return astr
 
 def generateHTMLOutput(url, gParam, instance, method, typeofInjection):
-	message = "<p class='well'>"+ method +" "+ url +" <br/>"
-	message += ""+ typeofInjection +  " <br/>"
-	message += "Parameter: "+ gParam + "  Value: "+ escape(instance) +  " <br/></p>"
+	message = "<p class='well'><strong>"+ method +"</strong> "+ url +" <br/>"
+	message += "Type: <strong>"+ typeofInjection +  "</strong> <br/>"
+	message += "Parameter: <strong>"+ gParam + "</strong><br/>  Value: <strong>"+ escape(instance) +  "</strong> <br/></p>"
 	# message += "Parameters"+ gParam +"<br/><br/>";
 	return message
 
@@ -63,7 +63,7 @@ def process(urlGlobal, database, attack_list ,txheaders):
 	appendToReport(urlGlobal, '<div id="collapseXss" class="panel-collapse collapse in"><div class="panel-body">')
 
 	for u in database.keys():
-		appendToReport(urlGlobal, "<h4><div class='label label-default'><a target='_balnk' href='"+ u +"'>"+ u +"</a></div></h4>")
+		appendToReport(u, "<h4><div class='label label-default'><a target='_balnk' href='"+ u +"'>"+ u +"</a></div></h4>")
 		if len(database[u]['GET']):
 			print "Method = GET ", u
 			for gParam in database[u]['GET']:

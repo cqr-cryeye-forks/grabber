@@ -61,7 +61,7 @@ def process(url, database, attack_list, txheaders):
 	plop.write("<filesAttacks>\n")
 	appendToReport(url, '<div id="collapseInclude" class="panel-collapse collapse in"><div class="panel-body">');
 	for u in database.keys():
-		appendToReport(url, "<h4><div class='label label-default'><a target='_balnk' href='"+ u +"'>"+ u +"</a></div></h4>")
+		appendToReport(u, "<h4><div class='label label-default'><a target='_balnk' href='"+ u +"'>"+ u +"</a></div></h4>")
 		if len(database[u]['GET']):
 			print "Method = GET ", u
 			for gParam in database[u]['GET']:
