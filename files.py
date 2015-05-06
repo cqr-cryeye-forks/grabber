@@ -46,6 +46,14 @@ def generateOutputLong(url, urlString ,method,type, severityNum, allParams = {})
 	astr += "\n</file>\n"
 	return astr
 
+def generateHTMLOutput(url, urlString, method, type, instance, allParams={}):
+	message = "<p class='well'><strong>"+ method +"</strong> <i>"+ url +"</i> <br/>"
+	message += "Type: <strong>"+ type +  "</strong> <br/>"
+	if method in ("GET", "get"):
+		message += "Parameter: <strong>"+ urlString + "</strong><br/>  Value: <strong>"+ instance +  "</strong> <br/></p>"
+	
+	return message
+
 def permutations(L):
 	if len(L) == 1:
 		yield [L[0]]
@@ -75,6 +83,7 @@ def process(url, database, attack_list, txheaders):
 							if k > 0:
 								# generate the info...
 								plop.write(generateOutput(u,gParam,instance,"GET",typeOfInjection, k))
+								appendToReport(u, generateHTMLOutput(u, gParam, "GET", typeOfInjection, instance))
 			# see the permutations
 			if len(database[u]['GET'].keys()) > 1:
 				for typeOfInjection in attack_list:
@@ -89,6 +98,7 @@ def process(url, database, attack_list, txheaders):
 							if k > 0:
 								# generate the info...
 								plop.write(generateOutputLong(u,url,"GET",typeOfInjection,k))
+								appendToReport(u, generateHTMLOutput(u, url, "GET", typeOfInjection, instance))
 		if len(database[u]['POST']):
 			print "Method = POST ", u
 			for gParam in database[u]['POST']:
@@ -102,6 +112,7 @@ def process(url, database, attack_list, txheaders):
 							if k > 0:
 								# generate the info...
 								plop.write(generateOutput(u,gParam,instance,"POST",typeOfInjection,k))
+								appendToReport(u, generateHTMLOutput(u, gParam, "POST", typeOfInjection, instance))
 			# see the permutations
 			if len(database[u]['POST'].keys()) > 1:
 				for typeOfInjection in attack_list:
@@ -116,6 +127,7 @@ def process(url, database, attack_list, txheaders):
 							if k > 0:
 								# generate the info...
 								plop.write(generateOutputLong(u,url,"POST",typeOfInjection,k,allParams))
+								appendToReport(u ,generateHTMLOutput(u, url, "POST", typeOfInjection, instance, allparams))
 	plop.write("\n</filesAttacks>")
 	appendToReport(url, "</div></div>");
 	plop.close()

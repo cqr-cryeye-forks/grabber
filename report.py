@@ -3,7 +3,7 @@ optionsMessage = ""
 def setOptions(options):
 	global optionsMessage
 	print options
-	optionsMessage = "<div> Detecting: ";
+	optionsMessage = "<br/><div> Looking for: ";
 	if options.sql != False:
 		optionsMessage += "<span class='label label-warning'>SQL Injection</span>"
 	if options.xss != False:
@@ -22,7 +22,11 @@ def generateHeader(url , isFinal=False):
 		processing = ""
 
 	if "Completed" in url:
-		url = """<div class='label label-success'>"""+ url +"""</div>"""
+		url = """Status: <div class='label label-success'>"""+ url +"""</div>"""
+	elif "Stopped" in url:
+		url = """Status: <div class='label label-danger'>"""+ url +"""</div>"""
+	elif "Indexing" in url:
+		url = """Generating Index: <div class='label label-primary'>"""+ url +"""</div>"""
 	else:
 		url = """Processing <div class='label label-primary'>"""+ url +"""</div>"""
 	header = """<html>
@@ -66,11 +70,13 @@ def generateHeader(url , isFinal=False):
 		<body>
 		<div class="container">
 		<div class="jumbotron">
-			<h1 class='h1'>Grabber Report</h1>
+			<h1 class='h1'>Grabber</h1>
+			<h4>Plain ol' web vulnerability scanner</h4>
 			<hr/>
+			<h4>"""+ optionsMessage +"""</h4>
 			<h2>"""+ url +"""
 			"""+ processing +"""
-			</h2><h3>"""+ optionsMessage +"""</h3>
+			</h2>
 		</div>
 		<div class="panel-group" id="accordion">"""
 	return header

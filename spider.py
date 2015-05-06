@@ -134,7 +134,6 @@ def getContentDirectURL_GET(url, string):
 
 
 def scan(currentURL):
-	appendToReport(currentURL, "Generating Index..")
 	"""
 		The Scanner is the first part of Grabber.
 		It retrieves every information of the HTML page
@@ -192,7 +191,9 @@ def giveGoodURL(href, urlLocal):
 		for e in allowed:
 			if '.'+e in urlLocal:
 				return htmldecode(urlLocal + href)
-		return htmldecode(urlLocal + '/' + href)
+		if urlLocal[len(urlLocal)-1] != '/':
+			urlLocal += '/'
+		return htmldecode(urlLocal + href)
 	if href[0] == '/':
 		 temp_url = urljoin(urlLocal, href)
 		 return htmldecode(temp_url)
@@ -201,7 +202,9 @@ def giveGoodURL(href, urlLocal):
 		if allowedExtensions(urlLocal) or '?' in urlLocal:
 			return htmldecode(urlLocal[0:urlLocal.rfind('/')+1] + href)
 		else:
-			return htmldecode(urlLocal + '/' + href)
+			if urlLocal[len(urlLocal)-1] != '/':
+				urlLocal += '/'
+			return htmldecode(urlLocal + href)
 	return htmldecode(href)
 
 def dl(fileAdress, destFile):
@@ -554,6 +557,7 @@ def spider(entryUrl, headers, depth = 0):
 		alreadyScanned = False
 
 	print "Start scanning...", root
+	appendToReport("Indexing - " + entryUrl, "", False)
 	if depth == 0:
 		scan(root)
 	else:

@@ -13,8 +13,6 @@ from report import appendToReport
 def detect_xss(instance, output):
 	if unescape(instance) in output:
 		return True
-	elif partially_in(unescape(instance), output):
-		return True
 	return False
 
 def generateOutput(url, gParam, instance,method,type):
@@ -93,22 +91,23 @@ def process(urlGlobal, database, attack_list ,txheaders):
 		if len(database[u]['POST']):
 			print "Method = POST ", u
 			for gParam in database[u]['POST']:
-				for typeOfInjection in attack_list:
-					for instance in attack_list[typeOfInjection]:
-						allParams = {}
-						for param in database[u]['POST']:
-							if param != gParam:
-								allParams[param] = 'abc'
-						allParams[gParam] = str(instance)
-						if instance != "See Below":
-							handle = getContentDirectURL_POST(u,allParams, txheaders)
-							if handle != None:
-								output = handle.read()
-								header = handle.info()
-								if detect_xss(str(instance),output):
-									# generate the info...
-									plop.write(generateOutput(u,gParam,instance,"POST",typeOfInjection))
-									appendToReport(u, generateHTMLOutput(u, gParam, instance, "POST", typeOfInjection))
+				if gParam != "None":
+					for typeOfInjection in attack_list:
+						for instance in attack_list[typeOfInjection]:
+							allParams = {}
+							for param in database[u]['POST']:
+								if param != gParam:
+									allParams[param] = 'abc'
+							allParams[gParam] = str(instance)
+							if instance != "See Below":
+								handle = getContentDirectURL_POST(u,allParams, txheaders)
+								if handle != None:
+									output = handle.read()
+									header = handle.info()
+									if detect_xss(str(instance),output):
+										# generate the info...
+										plop.write(generateOutput(u,gParam,instance,"POST",typeOfInjection))
+										appendToReport(u, generateHTMLOutput(u, gParam, instance, "POST", typeOfInjection))
 			# see the permutations
 			if len(database[u]['POST'].keys()) > 1:
 				for typeOfInjection in attack_list:

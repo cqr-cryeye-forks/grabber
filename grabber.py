@@ -12,6 +12,9 @@ import time
 import re,sys,os
 import ssl
 import webbrowser
+import paramiko
+import socks
+import socket
 
 # Personal libraries
 from spider import database, database_css, database_js
@@ -25,9 +28,12 @@ txheaders = {}
 refererUrl = "http://google.com/?q=grabber"
 #txheaders = {'User-agent' : 'Grabber/0.1 (X11; U; Linux i686; en-US; rv:1.7)', 'Referer' : refererUrl, 'Cookie': cookie}
 
-
 import cookielib
 import urllib2
+
+socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "localhost", 8080)
+socket.socket = socks.socksocket
+
 urlopen = urllib2.urlopen
 Request = urllib2.Request
 
@@ -458,6 +464,7 @@ def createStructure():
 		a=0
 
 if __name__ == '__main__':
+	stopped = 0
 	option_url = ""
 	option_sql = False
 	option_bsql = False
@@ -532,7 +539,7 @@ if __name__ == '__main__':
 
 	generateReport(archives_url, False);
 	filename = "file:///Applications/XAMPP/xamppfiles/htdocs/grabber/results/report.html"
-	webbrowser.open(filename, 0, False)
+	webbrowser.get('macosx').open(filename, 0, False)
 
 	definition_headers(option_cookie)
 	if option_cookie != None:
@@ -572,9 +579,12 @@ if __name__ == '__main__':
 		if option_session:
 			investigate(archives_url, txheaders, "session")
 	except KeyboardInterrupt:
-		appendToReport("Stopped", "", True)
+		stopped = 1
 		print "Plouf!"
-	appendToReport("Completed", "", True)
+	if stopped == 0:
+		appendToReport("Completed", "", True)
+	else:
+		appendToReport("Stopped", "", True)
 
 
 

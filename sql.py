@@ -10,9 +10,10 @@ from grabber import single_urlencode
 from report import appendToReport
 
 def detect_sql(output, url_get = "http://localhost/?param=false"):
-	listWords = ["query","Query", "Select", "SELECT", "SQL syntax","valid MySQL","ODBC Microsoft Access Driver","java.sql.SQLException","XPathException","valid ldap","javax.naming.NameNotFoundException", "SQLite3"]
+	listWords = ["query","Query", "at line", "SQL syntax", "syntax","valid MySQL","ODBC Microsoft Access Driver","java.sql.SQLException","XPathException","valid ldap","javax.naming.NameNotFoundException", "SQLite3"]
 	for wrd in listWords:
 		if output.count(wrd) > 0:
+			print wrd
 			return True
 	return False
 
