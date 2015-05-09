@@ -10,10 +10,9 @@ from grabber import single_urlencode
 from report import appendToReport
 
 def detect_sql(output, url_get = "http://localhost/?param=false"):
-	listWords = ["query","Query", "at line", "SQL syntax", "syntax","valid MySQL","ODBC Microsoft Access Driver","java.sql.SQLException","XPathException","valid ldap","javax.naming.NameNotFoundException", "SQLite3"]
+	listWords = [ "at line", "SQL syntax", "syntax","valid MySQL","ODBC Microsoft Access Driver","java.sql.SQLException","XPathException","valid ldap","javax.naming.NameNotFoundException", "SQLite3"]
 	for wrd in listWords:
 		if output.count(wrd) > 0:
-			print wrd
 			return True
 	return False
 
@@ -93,7 +92,7 @@ def process(url, database, attack_list, txheaders):
 						if detect_sql(output):
 							# generate the info...
 							plop.write(generateOutputLong(u,url,"GET",typeOfInjection))
-							appendToReport(u, generateHTMLOutput(u, url, "GET", typeOfInjection))
+							appendToReport(u, generateHTMLOutput(u, "ALL", url, "GET", typeOfInjection))
 		if len(database[u]['POST']):
 			print "Method = POST ", u
 			for gParam in database[u]['POST']:
@@ -117,7 +116,6 @@ def process(url, database, attack_list, txheaders):
 			for typeOfInjection in attack_list:
 				for instance in attack_list[typeOfInjection]:
 					allParams = {}
-					print "Attack: "+ instance
 					for gParam in database[u]['POST']:
 						allParams[gParam] = str(instance)
 					handle = getContentDirectURL_POST(u,allParams, txheaders)

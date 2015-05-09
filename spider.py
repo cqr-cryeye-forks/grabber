@@ -36,6 +36,7 @@ database     = {}
 database_url = []
 database_css = []
 database_js  = []
+scanned_urls = []
 database_ext = [] # database of unsecure external links
 local_url    = []
 dumb_params  = [] # if there is no parameters associated with a given URL, associate this list of "whatever looks like"
@@ -120,7 +121,7 @@ def getContentDirectURL_GET(url, string):
 		urllib2.install_opener(opener)
 		context = ssl._create_unverified_context()
 		req = Request(url, None, txheaders) # create a request object
-		ret = urlopen(req, context=context)                     # and open it to return a handle on the url
+		ret = urlopen(req, context=context, timeout=5)                     # and open it to return a handle on the url
 	except HTTPError, e:
 		print e
 		return
@@ -166,14 +167,15 @@ def allowedExtensions(plop):
 
 
 def makeRoot(urlLocal):
-	if allowedExtensions(urlLocal):
-		return urlLocal[0:urlLocal.rfind('/')+1]
+	#if allowedExtensions(urlLocal):
+	#	return urlLocal[0:urlLocal.rfind('/')+1]
 	return urlLocal
 
 
 
 def giveGoodURL(href, urlLocal):
-	
+	if href == None:
+		return htmldecode(urlLocal)
 	"""
 		It should return a good url...
 		href = argument retrieven from the href...
@@ -520,14 +522,27 @@ def parseHtmlParams(currentURL, htmlContent):
 
 def runSpiderScan(entryUrl, depth = 0):
 	global outSpiderFile
+	prev = ""
 	print "runSpiderScan @ ", entryUrl, " |   #",depth
-	if outSpiderFile:
-		outSpiderFile.write("\t\t<entryURL>%s</entryURL>\n" % entryUrl)
-	scan(entryUrl)
-	if depth > 0 and len(database_url) > 0:
-		for a in database_url:
-			runSpiderScan(a, depth-1)
-		return False
+	if entryUrl not in scanned_urls:
+		if outSpiderFile:
+			outSpiderFile.write("\t\t<entryURL>%s</entryURL>\n" % entryUrl)
+		scan(entryUrl)
+		scanned_urls.append(entryUrl)
+		if depth > 0 and len(database_url) > 0:
+			for a in database_url:
+				idx = a.rfind("?")
+				if idx != -1:
+					base_a = a[:idx]
+					base_prev = prev[:idx]
+					if base_a == base_prev:
+						continue
+					else:
+						runSpiderScan(a, depth-1)
+						prev = a
+				else:
+					runSpiderScan(a, depth-1)
+			return False
 	return True
 
 
@@ -579,6 +594,7 @@ def spider(entryUrl, headers, depth = 0):
 			regDmb = re.compile(r'(.*)<dumb>(.*)</dumb>(.*)',re.I)
 
 			f = open("local/spiderSite.xml", 'r')
+
 			for l in f.readlines():
 				if regUrl.match(l):
 					out = regUrl.search(l)

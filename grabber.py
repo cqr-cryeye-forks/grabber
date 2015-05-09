@@ -3,6 +3,7 @@
 	Grabber Core v0.1
 	Copyright (C) 2006 - Romain Gaucher - http://rgaucher.info
 """
+
 from BeautifulSoup import BeautifulSoup
 from xml.sax import *   # Need PyXML [http://pyxml.sourceforge.net/]
 from optparse import OptionParser
@@ -19,20 +20,17 @@ import socket
 # Personal libraries
 from spider import database, database_css, database_js
 from spider import spider, cj, allowedExtensions
-from report import generateReport, appendToReport, setOptions
+from report import generateReport, setOptions, appendToReport
 
 COOKIEFILE = 'cookies.lwp'          # the path and filename that you want to use to save your cookies in
 import os.path
 txdata = None
 txheaders = {}
-refererUrl = "http://google.com/?q=grabber"
+refererUrl = "https://129.219.253.30"
 #txheaders = {'User-agent' : 'Grabber/0.1 (X11; U; Linux i686; en-US; rv:1.7)', 'Referer' : refererUrl, 'Cookie': cookie}
 
 import cookielib
 import urllib2
-
-socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "localhost", 8080)
-socket.socket = socks.socksocket
 
 urlopen = urllib2.urlopen
 Request = urllib2.Request
@@ -504,6 +502,8 @@ if __name__ == '__main__':
 		option_crystal = options.crystal
 		option_session = options.session
 		option_cookie = options.cookie
+
+		setOptions(options)
 	else:
 		try:
 			f = open("grabber.conf.xml", 'r')
@@ -535,7 +535,6 @@ if __name__ == '__main__':
 	root = archives_url
 	createStructure()
 	depth = 1
-	setOptions(options)
 
 	generateReport(archives_url, False);
 	filename = "file:///Applications/XAMPP/xamppfiles/htdocs/grabber/results/report.html"
@@ -543,7 +542,7 @@ if __name__ == '__main__':
 
 	definition_headers(option_cookie)
 	if option_cookie != None:
-		appendToReport(archives_url, "<h4><div class='label label-default'>Cookie: "+ option_cookie +"</div></h4>")
+		appendToReport(archives_url, "<h4><div class='label label-default'>Cookie: "+ escape(option_cookie) +"</div></h4>")
 	try:
 		depth = int(option_spider.strip().split()[0])
 	except (ValueError, IndexError,AttributeError):

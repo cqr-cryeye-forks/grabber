@@ -8,6 +8,16 @@
 	</attack>
 	<attack>
 		<name>Simple SQL Injection</name>
+		<code>1&apos;</code>
+		<label>Simple SQL Injection Attacks</label>
+	</attack>
+	<attack>
+		<name>Simple SQL Injection</name>
+		<code>abcde</code>
+		<label>Simple SQL Injection Attacks</label>
+	</attack>
+	<attack>
+		<name>Simple SQL Injection</name>
 		<code>&apos; OR 1 = 1 -- </code>
 		<label>Simple SQL Injection Attacks</label>
 	</attack>
