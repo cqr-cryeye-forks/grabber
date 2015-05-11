@@ -1,7 +1,7 @@
 README
------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
 INTRODUCTION
------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
 Grabber is a black box web application vulnerability scanner that looks for SQL Injection,
 Blind SQL injection, XSS vulnerability and File include injection. 
 
@@ -17,9 +17,9 @@ in specified format.
 Grabber is written entirely in Python and requires additional python modules as dependencies
 such as BeautifulSoup and PyXML for web scrapping and parsing XML.
 
------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------
 HOW IT WORKS
------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------
 Grabber is a simple command line tool that accepts several command line arguments as follows:
 --url  <url>			- URL of the web base application
 --spider <index>		- Depth of scanning performed by spider
@@ -45,9 +45,9 @@ the server is scanned for Keywords that indicate injection was a successful or f
 Grabber generates a live and interactive HTML report that displays the current status of the tool,
 all the scanned URLs and vulnerabilities detected in an intuitive manner.
 
------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------
 ENHANCEMENTS / IMPROVEMENTS TO ORIGINAL TOOL
------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------
 We have made following improvememnts in the original tool:
 
 1. Added a Cookie support that allows passing Cookies that are sent with the requests to the web application.
@@ -71,9 +71,9 @@ are displayed including URL, request method, parameter used for injection, and v
 attack. Each module interacts with report generation by calling append_to_report method in report.py
 
 4. Added more attacks to detect SQL injection vulnerability in sqlAttacks.xml
------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------
 HOW TO RUN
------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------
 Grabber requires Python installed along with the necessary dependencies.
 You can start grabber by running following command inside the grabber folder:
 
