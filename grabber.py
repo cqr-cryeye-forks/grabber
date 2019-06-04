@@ -537,8 +537,9 @@ if __name__ == '__main__':
 	depth = 1
 
 	generateReport(archives_url, False);
-	filename = "file:///Applications/XAMPP/xamppfiles/htdocs/grabber/results/report.html"
-	webbrowser.get('macosx').open(filename, 0, False)
+	filename = "file:///results/report.html"
+	# webbrowser.get('macosx').open(filename, 0, False)
+	webbrowser.get('chromium').open(filename, 0, False)
 
 	definition_headers(option_cookie)
 	if option_cookie != None:
