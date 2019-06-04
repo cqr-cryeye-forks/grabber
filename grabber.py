@@ -538,8 +538,7 @@ if __name__ == '__main__':
 
 	generateReport(archives_url, False);
 	filename = "file:///results/report.html"
-	# webbrowser.get('macosx').open(filename, 0, False)
-	webbrowser.get('chromium').open(filename, 0, False)
+	# webbrowser.get('chromium').open(filename, 0, False)
 
 	definition_headers(option_cookie)
 	if option_cookie != None:
